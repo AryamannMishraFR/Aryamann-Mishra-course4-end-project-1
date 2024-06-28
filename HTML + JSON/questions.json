@@ -1,0 +1,29 @@
+{
+    "quiz": [
+        {
+            "id": 1,
+            "question": "What is the capital of France?",
+            "options": ["Berlin", "Madrid", "Paris", "Lisbon"]
+        },
+        {
+            "id": 2,
+            "question": "Which planet is known as the Red Planet?",
+            "options": ["Earth", "Mars", "Jupiter", "Saturn"]
+        },
+        {
+            "id": 3,
+            "question": "What is the largest ocean on Earth?",
+            "options": ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"]
+        },
+        {
+            "id": 4,
+            "question": "Who wrote 'Harry Potter'?",
+            "options": ["Harper Lee", "J.K. Rowling", "Ernest Hemingway", "Mark Twain"]
+        },
+        {
+            "id": 5,
+            "question": "What is the chemical symbol for water?",
+            "options": ["H2O", "O2", "CO2", "NaCl"]
+        }
+    ]
+}

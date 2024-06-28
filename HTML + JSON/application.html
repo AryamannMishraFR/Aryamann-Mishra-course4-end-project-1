@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Test Application</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 20px;
+            background-color: #f8f9fa;
+        }
+        .hidden {
+            display: none;
+        }
+        .container {
+            max-width: 800px;
+        }
+        h1, h3 {
+            color: #343a40;
+        }
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            background-color: #007bff;
+            color: #fff;
+        }
+        .form-check-label {
+            color: #343a40;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-success {
+            background-color: #28a745;
+            border: none;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center text-primary">Online Test Application</h1>
+        <div id="quiz-section" class="my-4"></div>
+        <div id="review-section" class="my-4 hidden"></div>
+        <div id="result-section" class="my-4 hidden"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let userAnswers = {};
+
+        function fetchQuiz() {
+            $.getJSON('questions.json', function(data) {
+                let quizHtml = '<form id="quizForm">';
+                data.quiz.forEach(question => {
+                    quizHtml += `
+                    <div class="card">
+                        <div class="card-header">
+                            Question ${question.id}
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">${question.question}</p>`;
+                    question.options.forEach(option => {
+                        quizHtml += `
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="question${question.id}" value="${option}" required>
+                            <label class="form-check-label">${option}</label>
+                        </div>`;
+                    });
+                    quizHtml += `
+                        </div>
+                    </div>`;
+                });
+                quizHtml += `<button type="button" class="btn btn-primary" onclick="reviewAnswers()">Review Answers</button>`;
+                quizHtml += `</form>`;
+                $('#quiz-section').html(quizHtml);
+            }).fail(function() {
+                $('#quiz-section').html('<p class="text-danger">Failed to load quiz questions.</p>');
+            });
+        }
+
+        function reviewAnswers() {
+            userAnswers = {};
+            $('input[type="radio"]:checked').each(function() {
+                const questionId = $(this).attr('name').replace('question', '');
+                userAnswers[questionId] = $(this).val();
+            });
+
+            $.getJSON('answers.json', function(data) {
+                let reviewHtml = '<h3>Review Your Answers</h3>';
+                Object.keys(userAnswers).forEach(questionId => {
+                    reviewHtml += `<p>Question ${questionId}: ${userAnswers[questionId]}`;
+                    if (userAnswers[questionId] === data.answers[questionId]) {
+                        reviewHtml += ` - <span class="text-success">Correct</span></p>`;
+                    } else {
+                        reviewHtml += ` - <span class="text-danger">Incorrect</span> (Correct answer: ${data.answers[questionId]})</p>`;
+                    }
+                });
+                reviewHtml += `<button class="btn btn-success" onclick="submitQuiz()">Submit Quiz</button>`;
+                $('#review-section').html(reviewHtml).removeClass('hidden');
+                $('#quiz-section').addClass('hidden');
+            }).fail(function() {
+                $('#review-section').html('<p class="text-danger">Failed to load answers for review.</p>').removeClass('hidden');
+            });
+        }
+
+        function submitQuiz() {
+            $.getJSON('answers.json', function(data) {
+                let score = 0;
+                let total = Object.keys(data.answers).length;
+
+                console.log('User Answers:', userAnswers);
+                console.log('Correct Answers:', data.answers);
+
+                Object.keys(userAnswers).forEach(questionId => {
+                    if (userAnswers[questionId] === data.answers[questionId]) {
+                        score++;
+                    } else {
+                        console.log(`Mismatch for question ${questionId}: user answer ${userAnswers[questionId]}, correct answer ${data.answers[questionId]}`);
+                    }
+                });
+
+                $('#result-section').html(`<h3>Your Score: ${score} / ${total}</h3>`).removeClass('hidden');
+                $('#review-section').addClass('hidden');
+            }).fail(function() {
+                $('#result-section').html('<p class="text-danger">Failed to load answers.</p>').removeClass('hidden');
+            });
+        }
+
+        $(document).ready(function() {
+            fetchQuiz();
+        });
+    </script>
+</body>
+</html>
